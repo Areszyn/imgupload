@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate Image Uploader</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --secondary: #3f37c9;
+      --success: #4cc9f0;
+      --danger: #f72585;
+      --warning: #f8961e;
+      --info: #7209b7;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gray: #6c757d;
+      --dark-gray: #343a40;
+      --border-radius: 12px;
+      --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] {
+      --light: #212529;
+      --dark: #f8f9fa;
+      --gray: #adb5bd;
+      --dark-gray: #dee2e6;
+      --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--light);
+      color: var(--dark);
+      line-height: 1.6;
+      transition: var(--transition);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .logo i {
+      font-size: 2rem;
+    }
+
+    .theme-toggle {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .theme-toggle:hover {
+      background: var(--primary-light);
+      transform: rotate(30deg);
+    }
+
+    .uploader-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .uploader-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .upload-section {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+    }
+
+    [data-theme="dark"] .upload-section {
+      background: #2b2d42;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--gray);
+      border-radius: var(--border-radius);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary);
+      background: rgba(67, 97, 238, 0.05);
+    }
+
+    .upload-area.active {
+      border-color: var(--success);
+      background: rgba(76, 201, 240, 0.05);
+    }
+
+    .upload-area i {
+      font-size: 3rem;
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .upload-text {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .browse-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-block;
+    }
+
+    .browse-btn:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-info {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    .preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .preview-item {
+      position: relative;
+      width: calc(33.333% - 0.66rem);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .preview-item {
+        width: calc(50% - 0.5rem);
+      }
+    }
+
+    .preview-img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-actions {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem;
+      transform: translateY(100%);
+      transition: var(--transition);
+    }
+
+    .preview-item:hover .preview-actions {
+      transform: translateY(0);
+    }
+
+    .preview-action-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: var(--transition);
+    }
+
+    .preview-action-btn:hover {
+      color: var(--success);
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+      outline: none;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .checkbox-label {
+      cursor: pointer;
+    }
+
+    .upload-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .upload-btn:hover {
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(67, 97, 238, 0.3);
+    }
+
+    .upload-btn:disabled {
+      background: var(--gray);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .progress-container {
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #e9ecef;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .progress {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .results-section {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+      height: 100%;
+    }
+
+    [data-theme="dark"] .results-section {
+      background: #2b2d42;
+    }
+
+    .result-item {
+      background: rgba(67, 97, 238, 0.1);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: var(--transition);
+    }
+
+    .result-item.success {
+      border-left: 4px solid var(--success);
+    }
+
+    .result-item.error {
+      border-left: 4px solid var(--danger);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .result-title {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .result-time {
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+
+    .result-image {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      margin: 1rem 0;
+      display: block;
+    }
+
+    .result-links {
+      margin-top: 1rem;
+    }
+
+    .link-group {
+      display: flex;
+      margin-bottom: 0.5rem;
+    }
+
+    .link-input {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius) 0 0 var(--border-radius);
+      font-size: 0.9rem;
+      background: white;
+    }
+
+    [data-theme="dark"] .link-input {
+      background: #343a40;
+      color: white;
+      border-color: #495057;
+    }
+
+    .copy-btn {
+      background: var(--dark);
+      color: white;
+      border: none;
+      padding: 0 1rem;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+    }
+
+    .copy-btn:hover {
+      background: var(--dark-gray);
+    }
+
+    .result-meta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .clear-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .clear-btn:hover {
+      background: #d6336c;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 1.5rem;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--gray);
+      position: relative;
+      transition: var(--transition);
+    }
+
+    .tab.active {
+      color: var(--primary);
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--primary);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--gray);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--dark);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    .toast i {
+      font-size: 1.25rem;
+    }
+
+    .image-editor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+
+    .image-editor.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .editor-container {
+      background: white;
+      border-radius: var(--border-radius);
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    [data-theme="dark"] .editor-container {
+      background: #2b2d42;
+    }
+
+    .editor-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .editor-title {
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .editor-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--gray);
+    }
+
+    .editor-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .editor-preview {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      overflow: auto;
+    }
+
+    .editor-image {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .editor-tools {
+      width: 250px;
+      border-left: 1px solid #ddd;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .tool-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .tool-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--primary);
+    }
+
+    .tool-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tool-btn {
+      background: var(--light);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .tool-btn:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .editor-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    .editor-btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .editor-btn.cancel {
+      background: var(--light);
+      color: var(--dark);
+      border: 1px solid #ddd;
+    }
+
+    .editor-btn.apply {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+
+    .editor-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-slider {
+      width: 100%;
+      margin-bottom: 0.75rem;
+    }
+
+    .filter-value {
+      font-size: 0.8rem;
+      color: var(--gray);
+      text-align: right;
+    }
+
+    .filter-reset {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span>Ultimate Uploader</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </header>
+
+    <div class="uploader-container">
+      <div class="upload-section">
+        <h2 class="section-title">
+          <i class="fas fa-upload"></i>
+          Upload Images
+        </h2>
+
+        <div class="upload-area" id="uploadArea">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <div class="upload-text">Drag & drop your images here</div>
+          <div>or</div>
+          <button class="browse-btn" id="browseBtn">Browse Files</button>
+          <div class="file-info" id="fileInfo"></div>
+          <input type="file" id="imageInput" class="file-input" accept="image/*" multiple>
+        </div>
+
+        <div class="preview-container" id="previewContainer"></div>
+
+        <div class="form-group">
+          <label for="apiKey" class="form-label">API Key</label>
+          <input type="text" id="apiKey" class="form-control" placeholder="Enter your ImgBB API key" value="f5f1b28c26a55604e0a4ac4a3e8df9cb">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Upload Options</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="privateUpload" class="form-control">
+            <label for="privateUpload" class="checkbox-label">Private upload</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="compression" class="form-control" checked>
+            <label for="compression" class="checkbox-label">Enable compression</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="imageName" class="form-label">Custom Name (optional)</label>
+          <input type="text" id="imageName" class="form-control" placeholder="Leave empty to use original filename">
+        </div>
+
+        <button class="upload-btn" id="uploadBtn" disabled>
+          <i class="fas fa-upload"></i>
+          Upload Images
+        </button>
+
+        <div class="progress-container" id="progressContainer">
+          <div class="progress-info">
+            <span id="progressStatus">Preparing upload...</span>
+            <span id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress" id="progressBar"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-section">
+        <h2 class="section-title">
+          <i class="fas fa-history"></i>
+          Upload Results
+        </h2>
+
+        <div class="tabs">
+          <div class="tab active" data-tab="all">All</div>
+          <div class="tab" data-tab="success">Success</div>
+          <div class="tab" data-tab="failed">Failed</div>
+        </div>
+
+        <div class="tab-content active" id="tab-all">
+          <div class="result-list" id="allResults"></div>
+        </div>
+
+        <div class="tab-content" id="tab-success">
+          <div class="result-list" id="successResults"></div>
+        </div>
+
+        <div class="tab-content" id="tab-failed">
+          <div class="result-list" id="failedResults"></div>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          <i class="fas fa-images"></i>
+          <h3>No uploads yet</h3>
+          <p>Your uploaded images will appear here</p>
+        </div>
+
+        <button class="clear-btn" id="clearResults">
+          <i class="fas fa-trash"></i>
+          Clear History
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMessage">Success!</span>
+  </div>
+
+  <div class="image-editor" id="imageEditor">
+    <div class="editor-container">
+      <div class="editor-header">
+        <h3 class="editor-title">Edit Image</h3>
+        <button class="editor-close" id="editorClose">&times;</button>
+      </div>
+      <div class="editor-body">
+        <div class="editor-preview">
+          <img id="editorImage" class="editor-image" src="" alt="Image to edit">
+        </div>
+        <div class="editor-tools">
+          <div class="tool-group">
+            <h4 class="tool-title">Filters</h4>
+            <div class="tool-options">
+              <button class="tool-btn" data-filter="brightness">Brightness</button>
+              <button class="tool-btn" data-filter="contrast">Contrast</button>
+              <button class="tool-btn" data-filter="saturate">Saturate</button>
+              <button class="tool-btn" data-filter="grayscale">Grayscale</button>
+              <button class="tool-btn" data-filter="sepia">Sepia</button>
+              <button class="tool-btn" data-filter="hue-rotate">Hue</button>
+              <button class="tool-btn" data-filter="blur">Blur</button>
+              <button class="tool-btn" data-filter="invert">Invert</button>
+            </div>
+          </div>
+          <div class="tool-group" id="filterControls" style="display: none;">
+            <div class="filter-info">
+              <span id="filterName">Brightness</span>
+              <span class="filter-value" id="filterValue">100%</span>
+            </div>
+            <input type="range" class="filter-slider" id="filterSlider" min="0" max="200" value="100">
+            <button class="filter-reset" id="filterReset">Reset</button>
+          </div>
+          <div class="tool-group">
+            <h4 class="tool-title">Adjustments</h4>
+            <div class="tool-options">
+              <button class="tool-btn" data-rotate="90">Rotate 90°</button>
+              <button class="tool-btn" data-rotate="-90">Rotate -90°</button>
+              <button class="tool-btn" data-flip="horizontal">Flip X</button>
+              <button class="tool-btn" data-flip="vertical">Flip Y</button>
+              <button class="tool-btn" id="cropBtn">Crop</button>
+            </div>
+          </div>
+          <div class="tool-group">
+            <h4 class="tool-title">Effects</h4>
+            <div class="tool-options">
+              <button class="tool-btn" data-effect="vintage">Vintage</button>
+              <button class="tool-btn" data-effect="lomo">Lomo</button>
+              <button class="tool-btn" data-effect="clarity">Clarity</button>
+              <button class="tool-btn" data-effect="sinCity">Sin City</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="editor-footer">
+        <button class="editor-btn cancel" id="editorCancel">Cancel</button>
+        <button class="editor-btn apply" id="editorApply">Apply Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const themeToggle = document.getElementById('themeToggle');
+    const uploadArea = document.getElementById('uploadArea');
+    const browseBtn = document.getElementById('browseBtn');
+    const imageInput = document.getElementById('imageInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const previewContainer = document.getElementById('previewContainer');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+    const progressStatus = document.getElementById('progressStatus');
+    const progressPercent = document.getElementById('progressPercent');
+    const allResults = document.getElementById('allResults');
+    const successResults = document.getElementById('successResults');
+    const failedResults = document.getElementById('failedResults');
+    const emptyState = document.getElementById('emptyState');
+    const clearResults = document.getElementById('clearResults');
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toastMessage');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const imageEditor = document.getElementById('imageEditor');
+    const editorImage = document.getElementById('editorImage');
+    const editorClose = document.getElementById('editorClose');
+    const editorCancel = document.getElementById('editorCancel');
+    const editorApply = document.getElementById('editorApply');
+    const filterControls = document.getElementById('filterControls');
+    const filterName = document.getElementById('filterName');
+    const filterValue = document.getElementById('filterValue');
+    const filterSlider = document.getElementById('filterSlider');
+    const filterReset = document.getElementById('filterReset');
+    const cropBtn = document.getElementById('cropBtn');
+
+    // State
+    let selectedFiles = [];
+    let currentTheme = 'light';
+    let activeFilter = null;
+    let originalImageData = null;
+    let currentImageIndex = null;
+    let currentFilters = {
+      brightness: 100,
+      contrast: 100,
+      saturate: 100,
+      grayscale: 0,
+      sepia: 0,
+      hueRotate: 0,
+      blur: 0,
+      invert: 0
+    };
+    let currentRotation = 0;
+    let isFlippedX = false;
+    let isFlippedY = false;
+    let isCropping = false;
+    let cropData = null;
+
+    // Initialize
+    loadTheme();
+    loadResults();
+
+    // Event Listeners
+    themeToggle.addEventListener('click', toggleTheme);
+    browseBtn.addEventListener('click', () => imageInput.click());
+    imageInput.addEventListener('change', handleFileSelect);
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('dragleave', handleDragLeave);
+    uploadArea.addEventListener('drop', handleDrop);
+    uploadBtn.addEventListener('click', uploadImages);
+    clearResults.addEventListener('click', clearAllResults);
+    editorClose.addEventListener('click', closeEditor);
+    editorCancel.addEventListener('click', closeEditor);
+    editorApply.addEventListener('click', applyEditorChanges);
+    filterSlider.addEventListener('input', updateFilterValue);
+    filterReset.addEventListener('click', resetFilter);
+    cropBtn.addEventListener('click', toggleCropMode);
+
+    // Tab switching
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        tabContents.forEach(content => content.classList.remove('active'));
+        document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // Tool buttons
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeFilter = btn.dataset.filter;
+        filterName.textContent = activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1);
+        filterSlider.value = currentFilters[activeFilter] || 100;
+        filterValue.textContent = `${filterSlider.value}%`;
+        filterControls.style.display = 'block';
+      });
+    });
+
+    document.querySelectorAll('[data-rotate]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentRotation += parseInt(btn.dataset.rotate);
+        applyImageTransform();
+      });
+    });
+
+    document.querySelectorAll('[data-flip]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.flip === 'horizontal') {
+          isFlippedX = !isFlippedX;
+        } else {
+          isFlippedY = !isFlippedY;
+        }
+        applyImageTransform();
+      });
+    });
+
+    document.querySelectorAll('[data-effect]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyEffect(btn.dataset.effect);
+      });
+    });
+
+    // Functions
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      setTheme(savedTheme);
+    }
+
+    function toggleTheme() {
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      setTheme(newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    function setTheme(theme) {
+      currentTheme = theme;
+      document.body.setAttribute('data-theme', theme);
+      themeToggle.innerHTML = theme === 'light' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      uploadArea.classList.add('active');
+    }
+
+    function handleDragLeave() {
+      uploadArea.classList.remove('active');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      uploadArea.classList.remove('active');
+      
+      if (e.dataTransfer.files.length) {
+        imageInput.files = e.dataTransfer.files;
+        handleFileSelect({ target: imageInput });
+      }
+    }
+
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      
+      if (!files.length) return;
+      
+      // Filter only image files
+      const imageFiles = files.filter(file => file.type.match('image.*'));
+      
+      if (imageFiles.length !== files.length) {
+        showToast('Some files were not images and were skipped', 'error');
+      }
+      
+      if (!imageFiles.length) return;
+      
+      selectedFiles = [...selectedFiles, ...imageFiles];
+      updateFileInfo();
+      renderPreviews();
+      uploadBtn.disabled = false;
+    }
+
+    function updateFileInfo() {
+      const totalSize = selectedFiles.reduce((sum, file) => sum + file.size, 0);
+      fileInfo.textContent = `${selectedFiles.length} file(s) selected - ${formatFileSize(totalSize)}`;
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+    }
+
+    function renderPreviews() {
+      previewContainer.innerHTML = '';
+      
+      selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+          const previewItem = document.createElement('div');
+          previewItem.className = 'preview-item';
+          
+          previewItem.innerHTML = `
+            <img src="${e.target.result}" class="preview-img" alt="${file.name}">
+            <div class="preview-actions">
+              <button class="preview-action-btn" data-action="edit" data-index="${index}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="preview-action-btn" data-action="remove" data-index="${index}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          
+          previewContainer.appendChild(previewItem);
+          
+          // Add event listeners to action buttons
+          previewItem.querySelector('[data-action="edit"]').addEventListener('click', () => openEditor(index));
+          previewItem.querySelector('[data-action="remove"]').addEventListener('click', () => removeFile(index));
+        };
+        
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      updateFileInfo();
+      renderPreviews();
+      
+      if (selectedFiles.length === 0) {
+        uploadBtn.disabled = true;
+        fileInfo.textContent = '';
+      }
+    }
+
+    function openEditor(index) {
+      currentImageIndex = index;
+      const file = selectedFiles[index];
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        editorImage.src = e.target.result;
+        originalImageData = e.target.result;
+        
+        // Reset transformations
+        currentRotation = 0;
+        isFlippedX = false;
+        isFlippedY = false;
+        resetFilters();
+        applyImageTransform();
+        
+        imageEditor.classList.add('active');
+      };
+      
+      reader.readAsDataURL(file);
+    }
+
+    function closeEditor() {
+      imageEditor.classList.remove('active');
+      isCropping = false;
+      if (cropData) {
+        // Remove any crop UI elements
+      }
+    }
+
+    function applyEditorChanges() {
+      if (currentImageIndex === null) return;
+      
+      // Create a new File from the edited image
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = editorImage.naturalWidth;
+      canvas.height = editorImage.naturalHeight;
+      
+      // Apply current filters
+      ctx.filter = getCurrentFilterString();
+      
+      // Apply transformations (rotation and flip)
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      if (currentRotation !== 0) ctx.rotate(currentRotation * Math.PI / 180);
+      if (isFlippedX) ctx.scale(-1, 1);
+      if (isFlippedY) ctx.scale(1, -1);
+      
+      // Draw the image
+      ctx.drawImage(
+        editorImage,
+        -editorImage.naturalWidth / 2,
+        -editorImage.naturalHeight / 2,
+        editorImage.naturalWidth,
+        editorImage.naturalHeight
+      );
+      
+            // Convert canvas to Blob and update the selectedFiles array
+      canvas.toBlob((blob) => {
+        const editedFile = new File([blob], selectedFiles[currentImageIndex].name, {
+          type: selectedFiles[currentImageIndex].type,
+          lastModified: Date.now()
+        });
+        
+        selectedFiles[currentImageIndex] = editedFile;
+        renderPreviews();
+        closeEditor();
+        showToast('Changes applied successfully', 'success');
+      }, selectedFiles[currentImageIndex].type);
+    }
+
+    function getCurrentFilterString() {
+      return `
+        brightness(${currentFilters.brightness}%)
+        contrast(${currentFilters.contrast}%)
+        saturate(${currentFilters.saturate}%)
+        grayscale(${currentFilters.grayscale}%)
+        sepia(${currentFilters.sepia}%)
+        hue-rotate(${currentFilters.hueRotate}deg)
+        blur(${currentFilters.blur}px)
+        invert(${currentFilters.invert}%)
+      `.replace(/\s+/g, ' ').trim();
+    }
+
+    function applyImageTransform() {
+      editorImage.style.transform = `
+        rotate(${currentRotation}deg)
+        scaleX(${isFlippedX ? -1 : 1})
+        scaleY(${isFlippedY ? -1 : 1})
+      `;
+      editorImage.style.filter = getCurrentFilterString();
+    }
+
+    function updateFilterValue() {
+      const value = filterSlider.value;
+      filterValue.textContent = `${value}${activeFilter === 'hue-rotate' ? 'deg' : activeFilter === 'blur' ? 'px' : '%'}`;
+      
+      switch (activeFilter) {
+        case 'brightness': currentFilters.brightness = value; break;
+        case 'contrast': currentFilters.contrast = value; break;
+        case 'saturate': currentFilters.saturate = value; break;
+        case 'grayscale': currentFilters.grayscale = value; break;
+        case 'sepia': currentFilters.sepia = value; break;
+        case 'hue-rotate': currentFilters.hueRotate = value; break;
+        case 'blur': currentFilters.blur = value; break;
+        case 'invert': currentFilters.invert = value; break;
+      }
+      
+      applyImageTransform();
+    }
+
+    function resetFilter() {
+      switch (activeFilter) {
+        case 'brightness': currentFilters.brightness = 100; break;
+        case 'contrast': currentFilters.contrast = 100; break;
+        case 'saturate': currentFilters.saturate = 100; break;
+        case 'grayscale': currentFilters.grayscale = 0; break;
+        case 'sepia': currentFilters.sepia = 0; break;
+        case 'hue-rotate': currentFilters.hueRotate = 0; break;
+        case 'blur': currentFilters.blur = 0; break;
+        case 'invert': currentFilters.invert = 0; break;
+      }
+      
+      filterSlider.value = activeFilter === 'brightness' || activeFilter === 'contrast' || activeFilter === 'saturate' ? 100 : 0;
+      filterValue.textContent = `${filterSlider.value}${activeFilter === 'hue-rotate' ? 'deg' : activeFilter === 'blur' ? 'px' : '%'}`;
+      applyImageTransform();
+    }
+
+    function resetFilters() {
+      currentFilters = {
+        brightness: 100,
+        contrast: 100,
+        saturate: 100,
+        grayscale: 0,
+        sepia: 0,
+        hueRotate: 0,
+        blur: 0,
+        invert: 0
+      };
+      
+      if (activeFilter) {
+        filterSlider.value = activeFilter === 'brightness' || activeFilter === 'contrast' || activeFilter === 'saturate' ? 100 : 0;
+        filterValue.textContent = `${filterSlider.value}${activeFilter === 'hue-rotate' ? 'deg' : activeFilter === 'blur' ? 'px' : '%'}`;
+      }
+    }
+
+    function toggleCropMode() {
+      isCropping = !isCropping;
+      if (isCropping) {
+        // Initialize crop functionality (you would need a crop library or implement your own)
+        showToast('Crop mode activated - drag to select area', 'success');
+        cropBtn.style.backgroundColor = 'var(--primary)';
+        cropBtn.style.color = 'white';
+      } else {
+        // Finalize crop
+        showToast('Crop applied', 'success');
+        cropBtn.style.backgroundColor = '';
+        cropBtn.style.color = '';
+      }
+    }
+
+    function applyEffect(effect) {
+      // Apply preset filter combinations for different effects
+      switch (effect) {
+        case 'vintage':
+          currentFilters = {
+            brightness: 110,
+            contrast: 110,
+            saturate: 80,
+            grayscale: 0,
+            sepia: 30,
+            hueRotate: 0,
+            blur: 0,
+            invert: 0
+          };
+          break;
+        case 'lomo':
+          currentFilters = {
+            brightness: 90,
+            contrast: 120,
+            saturate: 120,
+            grayscale: 0,
+            sepia: 0,
+            hueRotate: 0,
+            blur: 1,
+            invert: 0
+          };
+          break;
+        case 'clarity':
+          currentFilters = {
+            brightness: 100,
+            contrast: 120,
+            saturate: 120,
+            grayscale: 0,
+            sepia: 0,
+            hueRotate: 0,
+            blur: 0,
+            invert: 0
+          };
+          break;
+        case 'sinCity':
+          currentFilters = {
+            brightness: 90,
+            contrast: 150,
+            saturate: 0,
+            grayscale: 100,
+            sepia: 0,
+            hueRotate: 0,
+            blur: 0,
+            invert: 0
+          };
+          break;
+      }
+      
+      applyImageTransform();
+      showToast(`Applied ${effect} effect`, 'success');
+    }
+
+    async function uploadImages() {
+      if (selectedFiles.length === 0) {
+        showToast('Please select at least one file to upload', 'error');
+        return;
+      }
+      
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) {
+        showToast('API key is required', 'error');
+        return;
+      }
+      
+      const isPrivate = document.getElementById('privateUpload').checked;
+      const customName = document.getElementById('imageName').value.trim();
+      const enableCompression = document.getElementById('compression').checked;
+      
+      uploadBtn.disabled = true;
+      progressContainer.style.display = 'block';
+      progressBar.style.width = '0%';
+      progressPercent.textContent = '0%';
+      progressStatus.textContent = 'Starting upload...';
+      
+      try {
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          progressStatus.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+          
+          const formData = new FormData();
+          formData.append('key', apiKey);
+          formData.append('image', file);
+          
+          if (customName) {
+            formData.append('name', customName + (selectedFiles.length > 1 ? `_${i + 1}` : ''));
+          }
+          
+          if (isPrivate) {
+            formData.append('type', 'file');
+          }
+          
+          if (enableCompression) {
+            formData.append('expiration', '2592000'); // 30 days expiration for compressed images
+          }
+          
+          const response = await fetchWithProgress('https://api.imgbb.com/1/upload', {
+            method: 'POST',
+            body: formData
+          }, (progress) => {
+            const percent = Math.round(progress * 100);
+            progressBar.style.width = `${percent}%`;
+            progressPercent.textContent = `${percent}%`;
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            addResult(data.data, file.name, true);
+            showToast(`${file.name} uploaded successfully`, 'success');
+          } else {
+            addResult(data.error, file.name, false);
+            showToast(`${file.name} upload failed: ${data.error.message}`, 'error');
+          }
+        }
+      } catch (error) {
+        showToast(`Upload failed: ${error.message}`, 'error');
+        addResult({ message: error.message }, 'Upload Error', false);
+      } finally {
+        uploadBtn.disabled = false;
+        progressStatus.textContent = 'Upload complete';
+      }
+    }
+
+    function fetchWithProgress(url, options, onProgress) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open(options.method || 'GET', url);
+        
+        if (options.headers) {
+          Object.keys(options.headers).forEach(key => {
+            xhr.setRequestHeader(key, options.headers[key]);
+          });
+        }
+        
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(new Response(xhr.response, {
+              status: xhr.status,
+              statusText: xhr.statusText,
+              headers: xhr.getAllResponseHeaders()
+            }));
+          } else {
+            reject(new Error(xhr.statusText));
+          }
+        };
+        
+        xhr.onerror = () => reject(new Error('Network error'));
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            onProgress(e.loaded / e.total);
+          }
+        };
+        
+        xhr.send(options.body);
+      });
+    }
+
+    function addResult(data, filename, isSuccess) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString();
+      const dateString = now.toLocaleDateString();
+      
+      const resultItem = document.createElement('div');
+      resultItem.className = `result-item ${isSuccess ? 'success' : 'error'}`;
+      
+      if (isSuccess) {
+        resultItem.innerHTML = `
+          <div class="result-header">
+            <div class="result-title">${filename}</div>
+            <div class="result-time">${dateString} ${timeString}</div>
+          </div>
+          <img src="${data.thumb.url}" class="result-image" alt="Thumbnail">
+          <div class="result-links">
+            <div class="link-group">
+              <input type="text" class="link-input" value="${data.url}" readonly>
+              <button class="copy-btn" onclick="copyToClipboard(this.previousElementSibling)">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="link-group">
+              <input type="text" class="link-input" value="${data.display_url}" readonly>
+              <button class="copy-btn" onclick="copyToClipboard(this.previousElementSibling)">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <div class="link-group">
+              <input type="text" class="link-input" value="![${filename}](${data.url})" readonly>
+              <button class="copy-btn" onclick="copyToClipboard(this.previousElementSibling)">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+          </div>
+          <div class="result-meta">
+            <div class="meta-item">
+              <i class="fas fa-expand"></i>
+              ${data.width}×${data.height}
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-hdd"></i>
+              ${formatFileSize(data.size)}
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-clock"></i>
+              ${data.expiration ? new Date(data.expiration * 1000).toLocaleDateString() : 'Never'}
+            </div>
+          </div>
+        `;
+      } else {
+        resultItem.innerHTML = `
+          <div class="result-header">
+            <div class="result-title">Upload Failed: ${filename}</div>
+            <div class="result-time">${dateString} ${timeString}</div>
+          </div>
+          <div class="result-meta">
+            <div class="meta-item">
+              <i class="fas fa-exclamation-circle"></i>
+              ${data.message || 'Unknown error'}
+            </div>
+          </div>
+        `;
+      }
+      
+      allResults.insertBefore(resultItem, allResults.firstChild);
+      
+      if (isSuccess) {
+        successResults.insertBefore(resultItem.cloneNode(true), successResults.firstChild);
+      } else {
+        failedResults.insertBefore(resultItem.cloneNode(true), failedResults.firstChild);
+      }
+      
+      emptyState.style.display = 'none';
+      saveResults();
+    }
+
+    function copyToClipboard(element) {
+      element.select();
+      document.execCommand('copy');
+      
+      // Show feedback
+      const originalText = element.nextElementSibling.innerHTML;
+      element.nextElementSibling.innerHTML = '<i class="fas fa-check"></i>';
+      setTimeout(() => {
+        element.nextElementSibling.innerHTML = originalText;
+      }, 2000);
+      
+      showToast('Copied to clipboard', 'success');
+    }
+
+    function saveResults() {
+      const results = [];
+      document.querySelectorAll('#allResults .result-item').forEach(item => {
+        results.push({
+          html: item.innerHTML,
+          isSuccess: item.classList.contains('success')
+        });
+      });
+      
+      localStorage.setItem('uploadResults', JSON.stringify(results));
+    }
+
+    function loadResults() {
+      const savedResults = localStorage.getItem('uploadResults');
+      if (!savedResults) return;
+      
+      const results = JSON.parse(savedResults);
+      if (results.length === 0) return;
+      
+      results.forEach(result => {
+        const resultItem = document.createElement('div');
+        resultItem.className = `result-item ${result.isSuccess ? 'success' : 'error'}`;
+        resultItem.innerHTML = result.html;
+        
+        allResults.appendChild(resultItem);
+        
+        if (result.isSuccess) {
+          successResults.appendChild(resultItem.cloneNode(true));
+        } else {
+          failedResults.appendChild(resultItem.cloneNode(true));
+        }
+      });
+      
+      emptyState.style.display = 'none';
+    }
+
+    function clearAllResults() {
+      if (!confirm('Are you sure you want to clear all upload history?')) return;
+      
+      allResults.innerHTML = '';
+      successResults.innerHTML = '';
+      failedResults.innerHTML = '';
+      emptyState.style.display = 'block';
+      localStorage.removeItem('uploadResults');
+      showToast('All results cleared', 'success');
+    }
+
+    function showToast(message, type) {
+      toast.className = `toast ${type}`;
+      toastMessage.textContent = message;
+      toast.querySelector('i').className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+      
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Make functions available globally for inline event handlers
+    window.copyToClipboard = copyToClipboard;
+  </script>
+</body>
+</html>
